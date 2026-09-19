@@ -186,12 +186,18 @@ button.tool-item:hover {
 }
 
 /* 折叠态：文字淡出（宽度由容器裁切） */
-.sidebar.is-collapsed .sidebar-brand-text,
-.sidebar.is-collapsed .sidebar-section-label,
-.sidebar.is-collapsed .tool-item-text,
-.sidebar.is-collapsed .sidebar-collapse-text {
+.sidebar.is-collapsed .sidebar-section-label {
   opacity: 0;
   pointer-events: none;
+}
+
+/* 折叠态：行内文字彻底移出布局（仅 opacity:0 仍占横向空间，会把
+   logo / 工具图标 / 占位图标挤出栏内中心；display:none 后
+   flex justify-content: center 才能真正居中） */
+.sidebar.is-collapsed .sidebar-brand-text,
+.sidebar.is-collapsed .tool-item-text,
+.sidebar.is-collapsed .sidebar-collapse-text {
+  display: none;
 }
 
 .sidebar.is-collapsed .tool-item {
@@ -230,11 +236,14 @@ button.tool-item:hover {
   background: var(--surface-sunken);
 }
 
-/* 遮罩 */
+/* 遮罩（不用 inset 简写：旧版 X5/XWeb 内核不支持，会退化成 0 尺寸、点击落空） */
 .sidebar-backdrop {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background: var(--text-a32);
   border: none;
   z-index: 40;
@@ -304,6 +313,12 @@ button.tool-item:hover {
     width: min(300px, 86vw) !important;
     transform: translateX(-104%);
     box-shadow: var(--shadow-3);
+    /* 关键：关闭入场动画。
+       rise-in 以 fill-mode: both 结束后永久持有 transform: translateY(0)，
+       动画优先级高于普通样式声明，会把抽屉的 translateX(-104%)/(0) 覆盖掉，
+       导致微信内核下 is-open class 切换失效、抽屉无法收起。
+       抽屉显隐完全依赖 transform，必须让位。 */
+    animation: none;
   }
 
   .sidebar.is-open {
@@ -317,6 +332,13 @@ button.tool-item:hover {
   .sidebar .sidebar-collapse-text {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  /* 同 specificity 覆盖折叠态 display:none（声明在后 → 生效），
+     保证「先折叠再缩到窄屏」时抽屉文字仍完整显示 */
+  .sidebar.is-collapsed .sidebar-brand-text,
+  .sidebar.is-collapsed .tool-item-text {
+    display: flex;
   }
 
   .sidebar .tool-item {
