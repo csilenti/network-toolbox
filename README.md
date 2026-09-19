@@ -91,7 +91,7 @@ src/
 
 ## 贡献
 
-欢迎通过 Issue / Pull Request 贡献新工具或改进。提交信息请遵循 [GIT-GUIDE.md](./GIT-GUIDE.md) 中的 Conventional Commits 规范，新功能请在独立分支上开发后合入主分支。
+欢迎通过 Issue / Pull Request 贡献新工具或改进。提交信息请遵循 Conventional Commits 规范（`feat:` / `fix:` / `docs:` / `chore:` 等英文标识 + 冒号 + 空格 + 描述），新功能请在独立分支上开发后通过 Pull Request 合入主分支。
 
 ## 开源协议
 
