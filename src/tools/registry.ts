@@ -1,6 +1,8 @@
 import type { ComponentType } from 'react';
 import IPSubnetTool from './ip-subnet/IPSubnetTool';
 import { IPSubnetIcon } from './ip-subnet/icon';
+import TCPLabTool from './tcp-lab/TCPLabTool';
+import { TcpLabIcon } from './tcp-lab/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -30,5 +32,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '网络号、主机号与子网划分可视化',
     icon: IPSubnetIcon,
     component: IPSubnetTool,
+  },
+  {
+    id: 'tcp-lab',
+    name: 'TCP 连接演示',
+    description: '三次握手与四次挥手动画实验室',
+    icon: TcpLabIcon,
+    component: TCPLabTool,
   },
 ];
