@@ -498,6 +498,7 @@
 .tree-children {
   display: flex;
   align-items: flex-start;
+  gap: var(--sp-3); /* 12px，子网卡片间距 */
 }
 
 .tree-child {
@@ -518,12 +519,13 @@
   background: var(--border-strong);
 }
 
+/* 水平总线：向两侧各延伸半个列间距，跨过 flex gap 后与相邻列无缝拼接 */
 .tree-child::after {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: calc(var(--sp-3) / -2);
+  right: calc(var(--sp-3) / -2);
   height: 2px;
   background: var(--border-strong);
 }
@@ -593,7 +595,7 @@
 .subnet-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--sp-2);
+  gap: var(--sp-3); /* 8px → 12px，与树模式卡片间距一致 */
   padding: var(--sp-1);
 }
 
