@@ -1,6 +1,9 @@
 # 辅助工具台 · Network Toolbox
 
-面向计算机网络学习场景的「辅助工具台」Web 应用框架。当前内置一个工具：**IP 划分演示**——通过二进制可视化、分步推导、树状图与结果联动，帮助学习者直观理解 IP 地址中的网络号、主机号与子网划分（借位）过程。
+面向计算机网络学习场景的「辅助工具台」Web 应用框架。当前内置两个工具：
+
+- **IP 划分演示**——通过二进制可视化、分步推导、树状图与结果联动，帮助学习者直观理解 IP 地址中的网络号、主机号与子网划分（借位）过程。
+- **TCP 连接演示**——「可亲手操作的 TCP 协议动画实验室」：以结构化状态机驱动数据包飞行动画，配合趣味对话与真实报文字段双栏对照，完整演示三次握手 → 数据传输 → 四次挥手 → TIME_WAIT 的 TCP 连接生命周期。
 
 ## 功能特性
 
@@ -11,6 +14,15 @@
 - 子网树状图与结果总览表双向联动高亮，点击节点查看网络地址 / 可用范围 / 广播地址 / 容量可视化
 - 全部错误输入均给出教学化中文解释（主机位不足、非法掩码、非网络地址自动归一化等）
 
+**TCP 连接演示**
+- 完整生命周期 11 步状态机：三次握手（SYN → SYN+ACK → ACK）→ 连接建立 → 数据传输（DATA/ACK）→ 四次挥手（FIN → ACK → FIN → ACK）→ TIME_WAIT → CLOSED
+- 协议逻辑严格准确：SYN/FIN 消耗一个序列号、纯 ACK 不消耗，Seq/Ack 动态变化实时可查（如 SYN Seq=1000 → 对端 Ack=1001）
+- 双栏「人话 ↔ 报文」对照：上层趣味对话（“你好，我想和你建立 TCP 连接。”），下层真实 TCP Flags / Seq / Ack / 端口 / 窗口字段，明确区分比喻与协议
+- A / B 双端 TCP 状态链可视化（CLOSED→SYN-SENT→ESTABLISHED→…→TIME-WAIT / LISTEN→SYN-RECEIVED→…→LAST-ACK），当前状态高亮
+- 播放控制：自动播放 / 暂停 / 单步 / 上一步 / 重置，速度 0.5×~2× 可调；时间轴点击任意步骤直接跳转
+- 「当前发生了什么」逐步解释 + 知识卡片（为什么三次握手四次挥手、TIME_WAIT 是什么）
+- 学习模式 / 协议模式双视角，共用同一底层状态机
+
 **平台能力**
 - 工具注册表驱动：新增工具只需「新建模块 + 一行注册」，侧边栏与路由自动接入
 - 响应式布局（桌面三栏 / 平板折叠 / 移动端抽屉），`prefers-reduced-motion` 动效降级，正文对比度 ≥ 4.5:1
@@ -18,6 +30,7 @@
 ## 截图
 
 > 待补充：`docs/screenshot-ip-subnet.png`（建议截取默认演示页：192.168.1.0/24 划分 4 个子网的完整视图）
+> 待补充：`docs/screenshot-tcp-lab.png`（建议截取三次握手进行到第 2 步的视图：飞行中的 SYN+ACK 数据包 + 双端状态高亮）
 
 ## 技术栈
 
@@ -50,12 +63,20 @@ src/
 │   └── Sidebar.tsx             # 注册表驱动的工具导航
 └── tools/
     ├── registry.ts             # 工具注册表（唯一注册入口）
-    └── ip-subnet/
-        ├── IPSubnetTool.tsx    # 工具容器：状态提升（参数 + selectedId + 联动滚动）
-        ├── ip-subnet.css       # 工具专属样式
-        ├── components/         # InputPanel / BinaryVisualizer / CalculationSteps
-        │                       # SubnetTree / SubnetDetail / ResultTable / ErrorNotice
-        └── utils/              # ip.ts / subnet.ts（纯函数算法层）/ motion.ts
+    ├── ip-subnet/
+    │   ├── IPSubnetTool.tsx    # 工具容器：状态提升（参数 + selectedId + 联动滚动）
+    │   ├── ip-subnet.css       # 工具专属样式
+    │   ├── components/         # InputPanel / BinaryVisualizer / CalculationSteps
+    │   │                       # SubnetTree / SubnetDetail / ResultTable / ErrorNotice
+    │   └── utils/              # ip.ts / subnet.ts（纯函数算法层）/ motion.ts
+    └── tcp-lab/
+        ├── TCPLabTool.tsx      # 工具容器：stepIndex / playing / speed / mode 状态
+        ├── steps.ts            # 核心：11 步 TCP 生命周期状态机（唯一数据源）
+        ├── types.ts            # TcpStep / TcpPacket / 状态链等类型定义
+        ├── tcp-lab.css         # 工具专属样式（全 tokens 变量引用）
+        └── components/         # SequenceDiagram（数据包动画）/ StateTracker（双端状态链）
+                                # StepExplanation / PacketInspector / Timeline
+                                # Controls（播放控制 + 双模式）/ WhyCards（知识卡片）
 ```
 
 ## 核心设计
@@ -64,6 +85,7 @@ src/
 - **借位动画**：前缀变化时，被借用的 bit 格子以 CSS transition 平滑换色并伴随位移脉冲；`prefers-reduced-motion` 下全部动效自动关闭。
 - **双向联动**：结果表与树状图共享 `selectedId`，点击任一侧，另一侧高亮并滚动到可视区（使用 `scrollTop/scrollLeft` 计算，不使用 `scrollIntoView`）。
 - **教学化错误**：无法划分时（主机位不足 / 超出教学上限等）返回结构化错误并渲染带关键数字的中文解释，而非裸 Error。
+- **状态机驱动动画**（TCP 连接演示）：完整生命周期抽象为 `steps.ts` 中的结构化步骤数组（发送方 / Flags / Seq / Ack / 状态迁移 / 对话 / 解释），自动播放、单步、时间轴跳转共用同一 `stepIndex` 状态源，动画仅为渲染层 CSS——无 setTimeout 嵌套，未来可无痛扩展重传、丢包、滑动窗口等场景。
 
 ## 如何新增一个工具（三步）
 
@@ -83,9 +105,10 @@ src/
 ## 路线图
 
 - [x] IP 划分演示（当前版本）
+- [x] TCP 连接演示：三次握手与四次挥手动画实验室（当前版本）
 - [ ] 子网掩码计算
 - [ ] 进制转换
-- [ ] TCP 三次握手演示
+- [ ] TCP 扩展场景：丢包模拟 / 重传 / 滑动窗口
 - [ ] 路由表分析
 - [ ] OSI / TCP-IP 模型可视化
 
