@@ -1,0 +1,348 @@
+/* ============================================================
+   Layout —— 应用外壳 / 侧边栏 / 工作区
+   断点：≤ 900px 时侧边栏转为抽屉 + 顶栏汉堡按钮。
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-shell--empty {
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-7);
+  color: var(--text-secondary);
+}
+
+/* ============================== 侧边栏 ============================== */
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  flex: 0 0 auto;
+  height: 100vh;
+  padding: var(--sp-4) var(--sp-3);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  z-index: 50;
+  transition: width var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.sidebar.is-collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* 品牌区 */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-2) var(--sp-4);
+  white-space: nowrap;
+}
+
+.sidebar-logo {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: var(--text-secondary);
+}
+
+/* 分组标签 */
+.sidebar-section-label {
+  font-size: var(--fs-xs);
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  padding: var(--sp-2) var(--sp-2) var(--sp-1);
+  white-space: nowrap;
+}
+
+/* 工具列表 */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-2);
+  border-radius: var(--r-md);
+  text-align: left;
+  border: 1px solid transparent;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+button.tool-item:hover {
+  background: var(--surface-sunken);
+}
+
+.tool-item.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-a25);
+  box-shadow: inset 3px 0 0 var(--accent-strong);
+}
+
+.tool-item.is-active .tool-item-name {
+  color: var(--accent-strong);
+}
+
+.tool-item-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+.tool-item.is-active .tool-item-icon {
+  color: var(--accent-strong);
+}
+
+.tool-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tool-item-name {
+  font-size: var(--fs-md);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tool-item-desc {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 占位分组：纯视觉，不可交互 */
+.tool-item.is-placeholder {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* 折叠按钮 */
+.sidebar-collapse {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 40px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.sidebar-collapse:hover {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+.sidebar-collapse-icon {
+  display: inline-flex;
+  flex: 0 0 20px;
+  justify-content: center;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.sidebar-collapse-icon.is-flipped {
+  transform: rotate(180deg);
+}
+
+.sidebar-collapse-text {
+  font-size: var(--fs-sm);
+}
+
+/* 折叠态：文字淡出（宽度由容器裁切） */
+.sidebar.is-collapsed .sidebar-brand-text,
+.sidebar.is-collapsed .sidebar-section-label,
+.sidebar.is-collapsed .tool-item-text,
+.sidebar.is-collapsed .sidebar-collapse-text {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar.is-collapsed .tool-item {
+  justify-content: center;
+  padding: var(--sp-2) 0;
+}
+
+.sidebar.is-collapsed .sidebar-brand {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar.is-collapsed .sidebar-collapse {
+  justify-content: center;
+  padding: 0;
+}
+
+/* 移动端专用关闭按钮（桌面隐藏） */
+.sidebar-close {
+  display: none;
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+  line-height: 1;
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-close:hover {
+  background: var(--surface-sunken);
+}
+
+/* 遮罩 */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--text-a32);
+  border: none;
+  z-index: 40;
+}
+
+/* ============================== 工作区 ============================== */
+
+.workspace {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--topbar-height);
+  padding: 0 var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  color: var(--text);
+}
+
+.topbar-menu:hover {
+  background: var(--surface-sunken);
+}
+
+.topbar-title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.workspace-main {
+  flex: 1 1 auto;
+  padding: var(--sp-6) var(--sp-6) var(--sp-7);
+  min-width: 0;
+}
+
+/* 工具页通用 */
+.tool-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* ============================== 窄屏：抽屉模式 ============================== */
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(300px, 86vw) !important;
+    transform: translateX(-104%);
+    box-shadow: var(--shadow-3);
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  /* 抽屉态取消折叠样式的影响 */
+  .sidebar .sidebar-brand-text,
+  .sidebar .sidebar-section-label,
+  .sidebar .tool-item-text,
+  .sidebar .sidebar-collapse-text {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar .tool-item {
+    justify-content: flex-start;
+    padding: var(--sp-2);
+  }
+
+  .sidebar-collapse {
+    display: none;
+  }
+
+  .sidebar-close {
+    display: inline-flex;
+  }
+
+  .sidebar-backdrop.is-open,
+  .sidebar-backdrop {
+    display: block;
+    animation: rise-in var(--dur-fast) var(--ease-out) both;
+  }
+
+  .workspace-topbar {
+    display: flex;
+  }
+
+  .workspace-main {
+    padding: var(--sp-4) var(--sp-4) var(--sp-6);
+  }
+}

@@ -1,0 +1,99 @@
+/* ============================================================
+   Design Tokens —— 辅助工具台
+   工业实用 + 技术感的浅色学习工具台，像精密的实验室仪器面板。
+   组件内禁止硬编码色值，一律引用本文件变量。
+   ============================================================ */
+
+:root {
+  /* ---- 色彩：基调 ---- */
+  --bg: #f4f6f5;              /* 极浅暖灰绿背景 */
+  --surface: #ffffff;         /* 卡片表面 */
+  --surface-sunken: #eef1f0;  /* 内嵌区域（输入框、表格头） */
+  --text: #16211e;            /* 主文本 */
+  --text-secondary: #5c6b66;  /* 次要文本（白底对比度 ≈ 5:1） */
+  --border: rgba(22, 33, 30, 0.1);
+  --border-strong: rgba(22, 33, 30, 0.22);
+
+  /* ---- 色彩：强调 / 主操作（与网络号呼应） ---- */
+  --accent: #0d9488;
+  --accent-strong: #0f766e;   /* 文本级 teal（白底对比度 ≈ 4.9:1） */
+  --accent-soft: rgba(13, 148, 136, 0.1);
+
+  /* ---- 色彩：语义三色（贯穿全站的视觉系统） ---- */
+  --net: #0f766e;                       /* 网络号 · 深青 */
+  --net-soft: rgba(15, 118, 110, 0.13);
+  --subnet: #b45309;                    /* 子网号 · 琥珀 */
+  --subnet-soft: rgba(180, 83, 9, 0.15);
+  --subnet-strong: #92400e;
+  --host: #6d5ba6;                      /* 主机号 · 灰紫 */
+  --host-soft: rgba(109, 91, 166, 0.15);
+
+  /* ---- 色彩：状态 ---- */
+  --danger: #b3261e;
+  --danger-soft: rgba(179, 38, 30, 0.08);
+  --danger-border: rgba(179, 38, 30, 0.35);
+
+  /* ---- 色彩：透明度衍生令牌（同色相不同 alpha，组件内禁止再硬编码 rgba） ---- */
+  --accent-a22: rgba(13, 148, 136, 0.22);
+  --accent-a25: rgba(13, 148, 136, 0.25);
+  --accent-a28: rgba(13, 148, 136, 0.28);
+  --accent-a40: rgba(13, 148, 136, 0.4);
+  --accent-a55: rgba(13, 148, 136, 0.55);
+  --host-a72: rgba(109, 91, 166, 0.72);
+  --text-a14: rgba(22, 33, 30, 0.14);
+  --text-a18: rgba(22, 33, 30, 0.18);
+  --text-a32: rgba(22, 33, 30, 0.32);
+
+  /* ---- 字体 ---- */
+  --font-sans:
+    'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  --font-mono:
+    'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas,
+    'Liberation Mono', Menlo, monospace;
+
+  /* ---- 字阶 ---- */
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 21px;
+  --fs-2xl: 27px;
+
+  /* ---- 间距 ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+
+  /* ---- 圆角 ---- */
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* ---- 阴影（三级柔和） ---- */
+  --shadow-1:
+    0 1px 2px rgba(22, 33, 30, 0.05),
+    0 1px 3px rgba(22, 33, 30, 0.07);
+  --shadow-2:
+    0 2px 4px rgba(22, 33, 30, 0.05),
+    0 6px 16px rgba(22, 33, 30, 0.08);
+  --shadow-3:
+    0 4px 8px rgba(22, 33, 30, 0.06),
+    0 14px 34px rgba(22, 33, 30, 0.12);
+
+  /* ---- 动效 ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms;
+  --dur-med: 300ms;
+  --dur-slow: 460ms;
+
+  /* ---- 布局 ---- */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 68px;
+  --topbar-height: 54px;
+  --bit-size: 19px;   /* 二进制格子基础尺寸 */
+}
