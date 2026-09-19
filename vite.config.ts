@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  /* 相对路径 base：保证 dist/index.html 以 file:// 或任意子路径打开时资源可加载。 */
+  base: './',
   server: {
     port: 5173,
     open: false,
