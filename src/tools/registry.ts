@@ -3,6 +3,8 @@ import IPSubnetTool from './ip-subnet/IPSubnetTool';
 import { IPSubnetIcon } from './ip-subnet/icon';
 import TCPLabTool from './tcp-lab/TCPLabTool';
 import { TcpLabIcon } from './tcp-lab/icon';
+import DnsLabTool from './dns-lab/DnsLabTool';
+import { DnsLabIcon } from './dns-lab/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -39,5 +41,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '三次握手与四次挥手动画实验室',
     icon: TcpLabIcon,
     component: TCPLabTool,
+  },
+  {
+    id: 'dns-lab',
+    name: 'DNS 域名解析演示',
+    description: '递归查询与缓存命中全过程动画',
+    icon: DnsLabIcon,
+    component: DnsLabTool,
   },
 ];

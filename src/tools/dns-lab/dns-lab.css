@@ -1,0 +1,1159 @@
+/* ============================================================
+   DNS 域名解析演示 —— 工具专属样式
+   所有颜色 / 字号 / 间距 / 圆角 / 阴影一律引用 tokens.css 变量；
+   入场动画沿用全站 rise-in / pop-in，节点呼吸、脉冲与报文飞行为本工具专属 keyframes。
+   几何约定：.dns-node 固定 96px 高，图标中心 y = index*96 + 48（与 QueryPath.tsx 保持同步）。
+   ============================================================ */
+
+.dns-root .panel {
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.dns-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.dns-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.dns-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+}
+
+.dns-footnote {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  padding: 0 var(--sp-2) var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+/* ---------- 域名输入区 ---------- */
+
+.dns-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+.dns-domain-input {
+  width: 320px;
+  max-width: 100%;
+}
+
+.dns-cache-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.dns-cache-toggle input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.dns-input-error {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+
+.dns-input-hint {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--subnet-strong);
+}
+
+/* ---------- 桌面布局：主场景 + 右侧详情 ---------- */
+
+.dns-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+  margin-bottom: var(--sp-4);
+}
+
+.dns-col-main,
+.dns-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* ---------- 查询路径（视觉核心） ---------- */
+
+.dns-path {
+  position: relative;
+  /* 7 个节点 × 96px */
+  height: 672px;
+}
+
+/* 贯穿图标中心的路径线 */
+.dns-path-line {
+  position: absolute;
+  left: 27px;
+  top: 48px;
+  bottom: 48px;
+  width: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--text-a18) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+/* 节点行 */
+.dns-node {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-3) 0 var(--sp-1);
+}
+
+.dns-node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  font-size: 20px;
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  box-shadow: var(--shadow-1);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.dns-node-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dns-node-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.dns-node-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.dns-node-mark {
+  margin-left: auto;
+  font-size: var(--fs-lg);
+  color: var(--text-a32);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+/* 已过节点 */
+.dns-node.is-past .dns-node-icon {
+  border-color: var(--accent-a55);
+  background: var(--accent-soft);
+}
+
+.dns-node.is-past .dns-node-mark {
+  color: var(--accent-strong);
+}
+
+.dns-node.is-past .dns-node-name {
+  color: var(--text-secondary);
+}
+
+/* 当前节点：呼吸高亮 + 收到报文时的脉冲（key 由 React 侧绑定步骤 id 触发重放） */
+.dns-node.is-current .dns-node-icon {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  animation:
+    dns-breathe 1.8s var(--ease-out) infinite,
+    node-pulse 900ms var(--ease-out);
+}
+
+.dns-node.is-current .dns-node-mark {
+  color: var(--accent-strong);
+}
+
+.dns-node.is-current .dns-node-name {
+  color: var(--accent-strong);
+}
+
+/* 未来节点 */
+.dns-node.is-future {
+  opacity: 0.6;
+}
+
+/* 历史留痕短标签（可点击跳转） */
+.dns-node-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.dns-node-tag {
+  font-size: var(--fs-xs);
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--accent-a28);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.dns-node-tag:hover {
+  transform: translateY(-1px);
+  background: var(--surface);
+}
+
+/* 当前节点脉冲（收到报文时，key 由 React 侧绑定步骤 id 触发重放） */
+/* ---------- 飞行中的报文卡片 ---------- */
+
+.dns-pkt-fly {
+  position: absolute;
+  left: 52px;
+  margin-top: -19px;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--accent-strong);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-align: left;
+  z-index: 5;
+  animation: dns-fly-y calc(1050ms / var(--speed, 1)) var(--ease-out) both;
+}
+
+.dns-pkt-fly-title {
+  font-weight: 600;
+  color: var(--accent-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dns-pkt-fly-detail {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 查询：青色 ↓ */
+.dns-pkt-fly.is-query {
+  border-color: var(--accent-strong);
+}
+
+.dns-pkt-fly.is-query .dns-pkt-fly-title {
+  color: var(--accent-strong);
+}
+
+/* 响应：灰紫 ↑ */
+.dns-pkt-fly.is-response {
+  border-color: var(--host-a72);
+}
+
+.dns-pkt-fly.is-response .dns-pkt-fly-title {
+  color: var(--host);
+}
+
+/* 缓存检查：琥珀 ⟳ */
+.dns-pkt-fly.is-cache {
+  border-color: var(--subnet);
+}
+
+.dns-pkt-fly.is-cache .dns-pkt-fly-title {
+  color: var(--subnet-strong);
+}
+
+@keyframes dns-fly-y {
+  0% {
+    top: var(--from-y);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    top: var(--to-y);
+    opacity: 0.9;
+  }
+}
+
+/* 当前节点呼吸 + 脉冲 keyframes */
+@keyframes dns-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-a40), var(--shadow-1);
+  }
+  50% {
+    box-shadow: 0 0 0 7px var(--accent-a22), var(--shadow-1);
+  }
+}
+
+@keyframes node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-a40), var(--shadow-1);
+    transform: scale(1);
+  }
+  45% {
+    box-shadow: 0 0 0 10px var(--accent-a22), var(--shadow-1);
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 0 1.5px var(--accent-a25), var(--shadow-1);
+    transform: scale(1);
+  }
+}
+
+/* 结果横幅（解析完成 / 缓存命中） */
+.dns-path-banner {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a40);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent-strong);
+  animation: pop-in var(--dur-med) var(--ease-out) both;
+}
+
+/* 未开始解析的空态 */
+.dns-path-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+  pointer-events: none;
+}
+
+.dns-path-idle span {
+  font-size: 30px;
+}
+
+/* ---------- 控制条 ---------- */
+
+.dns-ctl-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.dns-root .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dns-ctl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.dns-ctl-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.dns-ctl-label {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.dns-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.dns-seg-item {
+  min-height: 34px;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.dns-seg-item:last-child {
+  border-right: none;
+}
+
+.dns-seg-item:hover {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+.dns-seg-item.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.dns-ctl-progress {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ---------- 当前步骤解释 ---------- */
+
+.exp-phase {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--accent-strong);
+  margin-bottom: var(--sp-2);
+}
+
+/* 递归 / 迭代两段链路的可视化区分（需求第十五节） */
+.exp-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  margin-bottom: var(--sp-2);
+}
+
+.exp-scope b {
+  font-size: var(--fs-sm);
+}
+
+.exp-scope-rec {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  color: var(--accent-strong);
+}
+
+.exp-scope-iter {
+  background: var(--host-soft);
+  border: 1px solid var(--host-a72);
+  color: var(--host);
+}
+
+.exp-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.exp-direction {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: 2px 10px;
+  background: var(--surface-sunken);
+  border-radius: 999px;
+}
+
+.flag-chip {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-a28);
+}
+
+.flag-chip-hit {
+  background: var(--subnet-soft);
+  color: var(--subnet-strong);
+  border-color: var(--border-strong);
+}
+
+.exp-text {
+  font-size: var(--fs-md);
+  line-height: 1.8;
+  margin-bottom: var(--sp-3);
+  white-space: pre-line;
+}
+
+.exp-text--idle {
+  color: var(--text-secondary);
+}
+
+.exp-dialogues {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.exp-dialogue {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: flex-start;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.exp-dialogue-avatar {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.exp-dialogue-name {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  margin-bottom: 2px;
+}
+
+.exp-dialogue-text {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+.exp-tip {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--subnet-soft);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-3);
+  transition: opacity var(--dur-med) var(--ease-out);
+}
+
+.exp-tip-label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--subnet-strong);
+  margin-bottom: 2px;
+}
+
+.exp-tip p {
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+.exp-note {
+  padding-top: var(--sp-3);
+  border-top: 1px dashed var(--border-strong);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* 模式侧重：学习模式突出对话与解释，协议模式突出报文字段 */
+.exp-panel--protocol .exp-dialogue,
+.exp-panel--protocol .exp-tip {
+  opacity: 0.55;
+}
+
+.exp-panel--protocol .flag-chip {
+  box-shadow: 0 0 0 1px var(--accent-a25);
+}
+
+/* ---------- DNS 报文详情 ---------- */
+
+.pkt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.pkt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.pkt-row-wide {
+  align-items: flex-start;
+}
+
+.pkt-row dt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.pkt-row dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pkt-row-hint {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* 报文详情空态 */
+.pkt-empty {
+  padding: var(--sp-5) var(--sp-3);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+}
+
+.pkt-empty span {
+  display: block;
+  font-size: 26px;
+  margin-bottom: var(--sp-2);
+}
+
+/* ---------- DNS 缓存与 TTL ---------- */
+
+.cache-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.cache-item {
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.cache-item.is-active {
+  border-color: var(--accent-a55);
+}
+
+.cache-item.is-expired {
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+}
+
+.cache-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.cache-domain {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.cache-ttl {
+  font-size: var(--fs-xs);
+  color: var(--accent-strong);
+}
+
+.cache-expired-badge {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.cache-item-body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 3px;
+}
+
+.cache-value {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.cache-bar {
+  margin-left: auto;
+  width: 72px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--text-a14);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cache-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width var(--dur-med) linear;
+}
+
+.cache-expired-note {
+  margin-top: 3px;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+}
+
+/* ---------- 时间轴 ---------- */
+
+.dns-tl-panel {
+  margin-bottom: var(--sp-4);
+}
+
+.dns-tl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.dns-tl-empty {
+  padding: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+  text-align: center;
+}
+
+.dns-tl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.dns-tl-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.dns-tl-icon {
+  font-size: var(--fs-sm);
+}
+
+.dns-tl-chip.is-past {
+  border-color: var(--accent-a40);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.dns-tl-chip.is-current {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: var(--shadow-2);
+}
+
+.dns-tl-chip.is-future {
+  color: var(--text-secondary);
+}
+
+/* ---------- Record Explorer ---------- */
+
+.rec-panel {
+  margin-bottom: var(--sp-4);
+}
+
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-3);
+}
+
+.rec-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.rec-card:hover {
+  border-color: var(--accent-a55);
+  box-shadow: var(--shadow-1);
+}
+
+.rec-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.rec-type {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.rec-type-a {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-a28);
+}
+
+.rec-type-aaaa {
+  background: var(--net-soft);
+  color: var(--net);
+  border: 1px solid var(--accent-a28);
+}
+
+.rec-type-cname {
+  background: var(--host-soft);
+  color: var(--host);
+  border: 1px solid var(--host-a72);
+}
+
+.rec-type-mx {
+  background: var(--subnet-soft);
+  color: var(--subnet-strong);
+  border: 1px solid var(--border-strong);
+}
+
+.rec-type-ns {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+}
+
+.rec-name {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-value {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-explain {
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* ---------- 最终结果卡 ---------- */
+
+.result-panel {
+  margin-bottom: var(--sp-4);
+  border-color: var(--accent-a40);
+  animation: pop-in var(--dur-med) var(--ease-out) both;
+}
+
+.result-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.result-title {
+  font-size: var(--fs-xl);
+  color: var(--accent-strong);
+}
+
+.result-hit-badge {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--subnet-soft);
+  color: var(--subnet-strong);
+  border: 1px solid var(--border-strong);
+}
+
+.result-mapping {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.result-domain {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.result-arrow {
+  color: var(--accent-strong);
+  font-size: var(--fs-lg);
+}
+
+.result-ip {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.result-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+}
+
+.result-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.result-row dt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.result-row dd {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.result-path {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface-sunken);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
+
+.result-path-label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-strong);
+  margin-bottom: 2px;
+}
+
+.result-path-text {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.result-actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* ---------- 知识卡 ---------- */
+
+.dns-why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.dns-why-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-bottom: var(--sp-2);
+}
+
+.dns-why-text {
+  font-size: var(--fs-sm);
+  line-height: 1.85;
+  margin-bottom: var(--sp-2);
+}
+
+.dns-why-note {
+  font-size: var(--fs-sm);
+  line-height: 1.85;
+  padding: var(--sp-3);
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+}
+
+.dns-why-note-label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-strong);
+  margin-bottom: 2px;
+}
+
+.dns-why-mini {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--bg);
+  border-radius: var(--r-sm);
+}
+
+.dns-why-mini-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dns-why-mini-caption {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.dns-why-lane {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  white-space: pre;
+  overflow: hidden;
+}
+
+/* ---------- 模式视觉侧重（根节点 data-mode 联动） ---------- */
+
+.dns-root[data-mode='protocol'] .exp-dialogue,
+.dns-root[data-mode='protocol'] .exp-tip {
+  opacity: 0.55;
+}
+
+.dns-root[data-mode='protocol'] .pkt-panel {
+  box-shadow: 0 0 0 1.5px var(--accent-a25), var(--shadow-1);
+}
+
+/* ---------- 响应式：窄屏上下堆叠 ---------- */
+
+@media (max-width: 900px) {
+  .dns-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dns-why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rec-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dns-domain-input {
+    width: 100%;
+  }
+
+  .dns-pkt-fly {
+    width: 158px;
+  }
+
+  .dns-path-banner {
+    left: var(--sp-4);
+    right: auto;
+  }
+
+  .dns-ctl-progress {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .rec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dns-node-name {
+    font-size: var(--fs-sm);
+  }
+
+  .dns-node-sub {
+    display: none;
+  }
+}
