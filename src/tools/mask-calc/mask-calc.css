@@ -1,0 +1,579 @@
+/* ============================================================
+   子网掩码计算器 —— 工具专属样式
+   视觉体系与 ip-subnet 保持一致：语义三色（网络位 teal / 主机位 灰紫），
+   所有颜色一律引用 tokens.css 变量，组件内禁止硬编码色值。
+   ============================================================ */
+
+/* ---------- 工具页骨架 ---------- */
+
+.mc-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.mc-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.mc-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+}
+
+.tool-section {
+  margin-bottom: var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.tool-section:hover {
+  box-shadow: var(--shadow-2);
+}
+
+/* ---------- 输入面板 ---------- */
+
+.mc-input-head {
+  margin-bottom: var(--sp-4);
+}
+
+.mc-input-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+/* 掩码 ⇄ CIDR 双向联动行 */
+.mc-swap-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.2fr) auto minmax(160px, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.mc-swap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: end;
+  height: 40px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: var(--r-md);
+}
+
+.mc-field-label {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+.mc-field-hint {
+  margin-left: var(--sp-2);
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+
+.mc-field-error {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  line-height: 1.6;
+}
+
+.mc-suggestion {
+  display: block;
+  margin-top: 2px;
+}
+
+.mc-suggestion-btn {
+  color: var(--accent-strong);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mc-suggestion-btn:hover {
+  color: var(--accent);
+}
+
+.mc-cidr-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.mc-cidr-slash {
+  font-size: var(--fs-lg);
+  color: var(--text-secondary);
+}
+
+.mc-cidr-controls .text-input {
+  width: 100%;
+  text-align: center;
+}
+
+.mc-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-4) 0;
+}
+
+.mc-ip-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) auto;
+  gap: var(--sp-4);
+  align-items: end;
+}
+
+.mc-quick-actions {
+  display: flex;
+  gap: var(--sp-2);
+  padding-bottom: 1px;
+}
+
+/* ---------- 32 bit 二进制位条 ---------- */
+
+.mc-binary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.mc-binary-caption {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.mc-bit-block {
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  margin-bottom: var(--sp-4);
+}
+
+.mc-bit-block:last-child {
+  margin-bottom: 0;
+}
+
+.mc-bit-block-mask {
+  background: var(--surface);
+}
+
+.mc-bit-block-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-2);
+}
+
+.mc-bit-block-value {
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+/* 32 列网格：十进制行 / bit 行共用 */
+.mc-bit-grid {
+  display: grid;
+  grid-template-columns: repeat(32, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.mc-octet-row {
+  margin-bottom: var(--sp-2);
+}
+
+.mc-octet {
+  grid-column: span 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 2px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+/* bit 格子：颜色一律 transition 过渡，前缀变化时平滑换色 */
+.mc-bit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--bit-size);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition:
+    background-color 380ms var(--ease-out),
+    color 380ms var(--ease-out),
+    box-shadow 380ms var(--ease-out);
+}
+
+.mc-bit-net {
+  background: var(--net-soft);
+  color: var(--net);
+}
+
+.mc-bit-host {
+  background: var(--host-soft);
+  color: var(--host);
+}
+
+/* 网络位 | 主机位 分界竖线 */
+.mc-bit.mc-seg-start {
+  box-shadow: inset 2.5px 0 0 var(--border-strong);
+}
+
+/* 前缀变化脉冲动画（全站记忆点） */
+.mc-bit.is-pulsing {
+  animation: bit-borrow 420ms var(--ease-out);
+}
+
+/* 掩码行：1 位即网络位 */
+.mc-bit-one {
+  background: var(--net-soft);
+  color: var(--net);
+  font-weight: 600;
+}
+
+.mc-bit-zero {
+  background: transparent;
+  color: var(--text-secondary);
+  opacity: 0.55;
+}
+
+.mc-mask-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.mc-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.mc-legend-net {
+  background: var(--net-soft);
+  border: 1px solid var(--net);
+}
+
+.mc-legend-host {
+  background: var(--host-soft);
+  border: 1px solid var(--host);
+}
+
+/* ---------- 结果卡 ---------- */
+
+.mc-result-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.mc-result-caption {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.mc-result-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.mc-result-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.mc-result-row dt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.mc-result-row dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  font-size: var(--fs-md);
+}
+
+.mc-strong {
+  font-weight: 600;
+}
+
+.mc-accent {
+  color: var(--accent-strong);
+}
+
+.mc-warn {
+  color: var(--subnet-strong);
+}
+
+.mc-class {
+  color: var(--subnet-strong);
+}
+
+.mc-row-hint {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+/* 💡 特例说明卡（/31 /32 /0） */
+.mc-special-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--accent-strong);
+}
+
+.mc-special-badge {
+  flex: 0 0 auto;
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+}
+
+/* ---------- 分步计算过程 ---------- */
+
+.mc-steps-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.mc-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mc-step-item {
+  position: relative;
+  display: flex;
+  gap: var(--sp-3);
+  padding: 0 0 var(--sp-4) 0;
+  margin-left: 5px;
+  border-left: 2px solid var(--accent-a22);
+  animation: rise-in 420ms var(--ease-out) both;
+}
+
+.mc-step-item:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.mc-step-dot {
+  position: absolute;
+  left: -6px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2.5px solid var(--accent-strong);
+}
+
+.mc-step-body {
+  padding-left: var(--sp-3);
+  font-size: var(--fs-md);
+  line-height: 1.75;
+}
+
+.mc-step-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.mc-step-num {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.mc-step-title {
+  font-weight: 600;
+}
+
+.mc-step-detail {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.mc-step-binary {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-2);
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 等待态与错误卡 ---------- */
+
+.mc-waiting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.mc-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.mc-error-card {
+  border-color: var(--danger-border);
+  background: linear-gradient(0deg, var(--danger-soft), var(--danger-soft)), var(--surface);
+}
+
+.mc-error-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.mc-error-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.mc-error-summary {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+/* ---------- 底部概念说明 ---------- */
+
+.mc-footnote {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  padding: 0 var(--sp-2) var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.mc-concepts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.mc-concepts li {
+  line-height: 1.7;
+}
+
+.mc-concepts strong {
+  color: var(--text);
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 900px) {
+  .mc-swap-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* 联动符号在纵向布局中改为水平居中 */
+  .mc-swap {
+    align-self: center;
+    transform: rotate(90deg);
+    width: 40px;
+  }
+
+  .mc-ip-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mc-quick-actions {
+    justify-content: flex-end;
+  }
+
+  .mc-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .mc-tool {
+    --bit-size: 14px;
+  }
+
+  .mc-octet {
+    font-size: 13px;
+  }
+}

@@ -5,6 +5,8 @@ import TCPLabTool from './tcp-lab/TCPLabTool';
 import { TcpLabIcon } from './tcp-lab/icon';
 import DnsLabTool from './dns-lab/DnsLabTool';
 import { DnsLabIcon } from './dns-lab/icon';
+import MaskCalcTool from './mask-calc/MaskCalcTool';
+import { MaskCalcIcon } from './mask-calc/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -48,5 +50,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '递归查询与缓存命中全过程动画',
     icon: DnsLabIcon,
     component: DnsLabTool,
+  },
+  {
+    id: 'mask-calc',
+    name: '子网掩码计算器',
+    description: '掩码与CIDR双向换算及网段信息速查',
+    icon: MaskCalcIcon,
+    component: MaskCalcTool,
   },
 ];
