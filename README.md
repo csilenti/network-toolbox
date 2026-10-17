@@ -1,10 +1,11 @@
 # 辅助工具台 · Network Toolbox
 
-面向计算机网络学习场景的「辅助工具台」Web 应用框架。当前内置三个工具：
+面向计算机网络学习场景的「辅助工具台」Web 应用框架。当前内置四个工具：
 
 - **IP 划分演示**——通过二进制可视化、分步推导、树状图与结果联动，帮助学习者直观理解 IP 地址中的网络号、主机号与子网划分（借位）过程。
 - **TCP 连接演示**——「可亲手操作的 TCP 协议动画实验室」：以结构化状态机驱动数据包飞行动画，配合趣味对话与真实报文字段双栏对照，完整演示三次握手 → 数据传输 → 四次挥手 → TIME_WAIT 的 TCP 连接生命周期。
 - **DNS 域名解析演示**——「DNS 域名解析实验室」：输入域名后以动画完整呈现 浏览器缓存 → 操作系统缓存 → 递归 DNS → 根 DNS → 顶级域 DNS → 权威 DNS 的逐级查询与返回，明确区分递归查询与迭代查询，支持缓存命中（Cache HIT）与 TTL 倒计时模拟。
+- **子网掩码计算器**——掩码与 CIDR 的双向换算速查工具：输入 IP + 掩码/前缀即时得到网络地址、广播地址、可用主机范围、通配符掩码、地址类别等信息，附 32 bit 二进制位条与分步 AND 运算过程，精确处理 /31、/32、/0 边界特例。
 
 ## 功能特性
 
@@ -33,6 +34,13 @@
 - DNS Record Explorer：A / AAAA / CNAME / MX / NS 五种记录类型示例与解释
 - 查询路径节点三态（✓ 已完成 / ● 查询中呼吸高亮 / ○ 未访问）+ 可点击跳转的解析时间轴 + 播放控制（速度 0.5×~4×）
 
+**子网掩码计算器**
+- 掩码 ⇄ CIDR 双向换算：任一侧输入另一侧实时联动，非法掩码（二进制位不连续，如 255.0.255.0）报错并给出「您可能想要」的最近似合法掩码一键建议
+- 输入 IP + 掩码/前缀即时计算：网络地址、广播地址、总地址数、可用主机数与范围、通配符掩码（Wildcard）、地址类别（A/B/C/D/E）、RFC1918 私有地址与回环标记
+- 边界特例精确处理：/31（RFC 3021 点对点，可用 2）、/32（单主机路由，可用 1）、/0（0.0.0.0 掩码，可用 2³²−2），均附 💡 说明卡
+- 32 bit 二进制位条三色可视化（网络位/主机位）+ 分步 AND 运算过程逐步展示
+- 计算层为纯函数（无符号 32 位位运算），配套 vitest 单元测试 68 个用例：正常输入、边界值（/31 /32 /0 /1 /30）、非法输入（位不连续掩码、越界前缀、非法 IP）、0~32 全前缀往返一致性
+
 **平台能力**
 - 工具注册表驱动：新增工具只需「新建模块 + 一行注册」，侧边栏与路由自动接入
 - 响应式布局（桌面三栏 / 平板折叠 / 移动端抽屉），`prefers-reduced-motion` 动效降级，正文对比度 ≥ 4.5:1
@@ -42,6 +50,7 @@
 > 待补充：`docs/screenshot-ip-subnet.png`（建议截取默认演示页：192.168.1.0/24 划分 4 个子网的完整视图）
 > 待补充：`docs/screenshot-tcp-lab.png`（建议截取三次握手进行到第 2 步的视图：飞行中的 SYN+ACK 数据包 + 双端状态高亮）
 > 待补充：`docs/screenshot-dns-lab.png`（建议截取迭代查询进行中的视图：Referral 响应包飞向递归 DNS + 路径节点三态高亮）
+> 待补充：`docs/screenshot-mask-calc.png`（建议截取默认演示页：/24 双向换算 + 32 bit 位条 + 完整结果卡）
 
 ## 技术栈
 
@@ -55,6 +64,7 @@
 ```bash
 npm install       # 安装依赖（如网络慢可切换 npmmirror 镜像）
 npm run dev       # 本地开发，默认 http://localhost:5173
+npm run test      # 运行单元测试（vitest，子网掩码计算器计算层）
 npm run build     # 类型检查（tsc --noEmit）+ 生产构建
 npm run preview   # 预览生产构建产物
 ```
@@ -88,7 +98,7 @@ src/
         └── components/         # SequenceDiagram（数据包动画）/ StateTracker（双端状态链）
                                 # StepExplanation / PacketInspector / Timeline
                                 # Controls（播放控制 + 双模式）/ WhyCards（知识卡片）
-    └── dns-lab/
+    ├── dns-lab/
         ├── DnsLabTool.tsx      # 工具容器：stepIndex / playing / speed / mode / 缓存与 TTL 状态
         ├── steps.ts            # 核心：buildSteps 纯函数，按域名与缓存状态动态生成步骤
         ├── types.ts            # DnsRecord / DnsServer / DnsPacket / DnsStep 等类型定义
@@ -97,6 +107,15 @@ src/
         └── components/         # QueryPath（查询路径动画）/ StepExplanation / PacketInspector
                                 # Timeline / RecordExplorer / CachePanel / Controls
                                 # WhyCards / ResultCard（最终解析结果）
+    └── mask-calc/
+        ├── MaskCalcTool.tsx    # 工具容器：输入即算（useMemo 纯函数驱动）
+        ├── types.ts            # MaskInfo / SubnetInfo / 错误类型定义
+        ├── utils/mask.ts       # 核心：掩码校验 / 双向换算 / 网段计算（无符号 32 位位运算）
+        ├── utils/steps.ts      # 分步 AND 计算过程生成
+        ├── utils/mask.test.ts  # vitest 单元测试（68 用例：正常/边界/非法/往返一致性）
+        ├── mask-calc.css       # 工具专属样式（全 tokens 变量引用）
+        └── components/         # InputPanel（双向联动输入）/ BinaryBar（32 bit 位条）
+                                # ResultCard（网段信息卡 + 特例说明）/ CalculationSteps
 ```
 
 ## 核心设计
@@ -127,7 +146,7 @@ src/
 - [x] IP 划分演示（当前版本）
 - [x] TCP 连接演示：三次握手与四次挥手动画实验室（当前版本）
 - [x] DNS 域名解析演示：递归查询与缓存命中全过程动画（当前版本）
-- [ ] 子网掩码计算
+- [x] 子网掩码计算：掩码与 CIDR 双向换算及网段信息速查（当前版本）
 - [ ] 进制转换
 - [ ] TCP 扩展场景：丢包模拟 / 重传 / 滑动窗口
 - [ ] DNS 扩展场景：CNAME 链 / NXDOMAIN / DNS over HTTPS
