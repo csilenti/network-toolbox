@@ -1,0 +1,674 @@
+/* ============================================================
+   路由匹配演示 —— 工具专属样式
+   视觉体系与 tcp-lab / dns-lab / route-analysis 保持统一：
+   所有颜色 / 字号 / 间距 / 圆角 / 阴影一律引用 tokens.css 变量
+   （#ffffff 白字为项目既有惯例，用于深色徽标底）。
+   专属视觉元素：沿路由表纵向飞行的数据包卡片 + 逐条判定徽标动画。
+   ============================================================ */
+
+.rmd-root .panel {
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.rmd-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.rmd-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.rmd-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+}
+
+/* ---------- 桌面布局：动画区 + 右侧详情 ---------- */
+
+.rmd-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+  margin-bottom: var(--sp-4);
+}
+
+.rmd-col-main,
+.rmd-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* ---------- 输入行 ---------- */
+
+.rmd-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+.rmd-field-label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.rmd-ip-input {
+  width: 220px;
+}
+
+.rmd-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.rmd-preset-btn {
+  font-size: var(--fs-xs);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.rmd-preset-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.rmd-input-error {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--danger);
+  line-height: 1.6;
+}
+
+.rmd-input-hint {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--accent-strong);
+  line-height: 1.6;
+}
+
+/* ---------- 路由表动画区 ---------- */
+
+.rmd-table-head {
+  margin-bottom: var(--sp-4);
+}
+
+.rmd-table-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+/* 数据包停靠栏 */
+.rmd-packet-dock {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+.rmd-packet-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.rmd-packet-name {
+  font-weight: 600;
+}
+
+.rmd-packet-ip {
+  margin-left: auto;
+  color: var(--accent-strong);
+  font-size: var(--fs-sm);
+}
+
+/* 条目卡片纵向列表 */
+.rmd-route-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.rmd-route-card {
+  position: relative;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  animation: rise-in 420ms var(--ease-out) both;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* 待比对：待定态 */
+.rmd-route-card.is-pending {
+  border-style: dashed;
+}
+
+/* 不匹配：灰化 */
+.rmd-route-card.is-miss {
+  opacity: 0.55;
+  border-color: var(--border);
+}
+
+/* 命中：高亮 + 进入候选集 */
+.rmd-route-card.is-hit {
+  border-color: var(--net);
+  background: linear-gradient(0deg, var(--net-soft), var(--net-soft)), var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+/* 决赛圈：候选集徽标 */
+.rmd-route-card.is-finalist {
+  border-color: var(--subnet);
+  background: linear-gradient(0deg, var(--subnet-soft), var(--subnet-soft)), var(--surface);
+}
+
+/* 胜出：强高亮脉冲 */
+.rmd-route-card.is-winner {
+  border-color: var(--accent-strong);
+  background: linear-gradient(0deg, var(--accent-soft), var(--accent-soft)), var(--surface);
+  box-shadow: var(--shadow-2);
+  animation: rmd-winner-pulse 900ms var(--ease-out);
+}
+
+@keyframes rmd-winner-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-a40), var(--shadow-2);
+  }
+  45% {
+    box-shadow: 0 0 0 10px var(--accent-a22), var(--shadow-2);
+  }
+  100% {
+    box-shadow: 0 0 0 1.5px var(--accent-a25), var(--shadow-2);
+  }
+}
+
+.rmd-route-card.is-current {
+  border-color: var(--accent-a55);
+}
+
+.rmd-row-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.rmd-row-id {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 7px;
+  flex: 0 0 auto;
+}
+
+.rmd-row-net {
+  font-weight: 600;
+  font-size: var(--fs-md);
+}
+
+.rmd-row-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.rmd-row-badge.is-badge-pending {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-color: var(--border);
+}
+
+.rmd-row-badge.is-badge-hit {
+  color: var(--net);
+  background: var(--net-soft);
+  border-color: var(--net);
+}
+
+.rmd-row-badge.is-badge-miss {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
+}
+
+.rmd-row-badge.is-badge-finalist {
+  color: var(--subnet-strong);
+  background: var(--subnet-soft);
+  border-color: var(--subnet);
+}
+
+.rmd-row-badge.is-badge-winner {
+  color: #ffffff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.rmd-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.rmd-row-meta b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rmd-row-and {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border-strong);
+  padding-left: var(--sp-2);
+  letter-spacing: 0.3px;
+}
+
+/* ---------- 沿列表纵向飞行的数据包卡片（本工具专属视觉元素） ---------- */
+
+.rmd-fly-packet {
+  position: absolute;
+  top: -10px;
+  right: var(--sp-4);
+  font-size: 24px;
+  line-height: 1;
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px var(--text-a32));
+  animation: rmd-pkt-descend calc(850ms / var(--speed, 1)) var(--ease-out) both;
+}
+
+@keyframes rmd-pkt-descend {
+  from {
+    transform: translateY(-46px) scale(0.9);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ---------- 控制条 ---------- */
+
+.rmd-ctl-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.rmd-ctl-main .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rmd-ctl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.rmd-ctl-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.rmd-ctl-label {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.rmd-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.rmd-seg-item {
+  min-height: 34px;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.rmd-seg-item:last-child {
+  border-right: none;
+}
+
+.rmd-seg-item:hover {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+.rmd-seg-item.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.rmd-ctl-progress {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ---------- 当前步骤解释 ---------- */
+
+.rmd-exp-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.rmd-exp-progress {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: 2px 10px;
+  background: var(--surface-sunken);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.rmd-exp-kind {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.rmd-exp-title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  margin-bottom: var(--sp-2);
+}
+
+.rmd-exp-desc {
+  font-size: var(--fs-md);
+  line-height: 1.8;
+}
+
+.rmd-exp-idle {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+/* ---------- 胜出路由转发详情 ---------- */
+
+.rmd-winner-head {
+  margin-bottom: var(--sp-3);
+}
+
+.rmd-winner-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.rmd-winner-card {
+  padding: var(--sp-4);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+
+.rmd-winner-route {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--accent-strong);
+  margin-bottom: var(--sp-3);
+}
+
+.rmd-winner-trophy {
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+
+.rmd-result-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.rmd-result-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.rmd-result-row dt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.rmd-result-row dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+.rmd-winner-reason {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--accent-strong);
+}
+
+.rmd-forward-line {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* done 步「本次经历」统计 */
+.rmd-done-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px dashed var(--border-strong);
+}
+
+.rmd-done-title {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.rmd-done-chip {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.rmd-done-chip.is-hit {
+  color: var(--net);
+  background: var(--net-soft);
+  border-color: var(--net);
+}
+
+.rmd-done-chip.is-miss {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+}
+
+.rmd-done-chip.is-winner {
+  color: #ffffff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* ---- 不可达兜底卡 ---- */
+
+.rmd-unreachable {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  border-color: var(--danger-border);
+  background: linear-gradient(0deg, var(--danger-soft), var(--danger-soft)), var(--surface);
+}
+
+.rmd-unreachable-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.rmd-unreachable-body h3 {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--danger);
+  margin-bottom: var(--sp-1);
+}
+
+.rmd-unreachable-body p {
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* ---------- 底部说明 ---------- */
+
+.rmd-footnote {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  padding: 0 var(--sp-2) var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+/* ---------- 响应式：窄屏上下堆叠 ---------- */
+
+@media (max-width: 900px) {
+  .rmd-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rmd-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rmd-ctl-progress {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .rmd-fly-packet {
+    font-size: 20px;
+    top: -8px;
+  }
+}
+
+@media (max-width: 720px) {
+  .rmd-input-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rmd-ip-input {
+    width: 100%;
+  }
+
+  .rmd-presets {
+    justify-content: flex-start;
+  }
+
+  .rmd-route-card {
+    padding: var(--sp-3);
+  }
+
+  .rmd-row-meta {
+    gap: var(--sp-1) var(--sp-3);
+  }
+
+  .rmd-packet-ip {
+    margin-left: 0;
+    width: 100%;
+  }
+}

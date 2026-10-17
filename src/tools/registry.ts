@@ -5,6 +5,8 @@ import TCPLabTool from './tcp-lab/TCPLabTool';
 import { TcpLabIcon } from './tcp-lab/icon';
 import DnsLabTool from './dns-lab/DnsLabTool';
 import { DnsLabIcon } from './dns-lab/icon';
+import RouteMatchDemoTool from './route-match-demo/RouteMatchDemoTool';
+import { RouteMatchDemoIcon } from './route-match-demo/icon';
 import MaskCalcTool from './mask-calc/MaskCalcTool';
 import { MaskCalcIcon } from './mask-calc/icon';
 import UnitCalcTool from './unit-calc/UnitCalcTool';
@@ -54,6 +56,13 @@ export const toolRegistry: ToolDefinition[] = [
     description: '递归查询与缓存命中全过程动画',
     icon: DnsLabIcon,
     component: DnsLabTool,
+  },
+  {
+    id: 'route-match-demo',
+    name: '路由匹配演示',
+    description: '数据包逐条匹配过程动画',
+    icon: RouteMatchDemoIcon,
+    component: RouteMatchDemoTool,
   },
   {
     id: 'mask-calc',
