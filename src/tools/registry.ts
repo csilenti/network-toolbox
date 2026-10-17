@@ -9,6 +9,8 @@ import MaskCalcTool from './mask-calc/MaskCalcTool';
 import { MaskCalcIcon } from './mask-calc/icon';
 import UnitCalcTool from './unit-calc/UnitCalcTool';
 import { UnitCalcIcon } from './unit-calc/icon';
+import RouteAnalysisTool from './route-analysis/RouteAnalysisTool';
+import { RouteAnalysisIcon } from './route-analysis/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -66,5 +68,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '带宽、数据大小与下载时间换算',
     icon: UnitCalcIcon,
     component: UnitCalcTool,
+  },
+  {
+    id: 'route-analysis',
+    name: '路由表分析',
+    description: '最长前缀匹配过程可视化分析',
+    icon: RouteAnalysisIcon,
+    component: RouteAnalysisTool,
   },
 ];
