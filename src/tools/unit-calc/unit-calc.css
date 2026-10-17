@@ -1,0 +1,379 @@
+/* ============================================================
+   网络单位换算计算器 —— 工具专属样式
+   视觉体系与 mask-calc 保持一致：所有颜色一律引用 tokens.css
+   变量，组件内禁止硬编码色值；入场动画与全站同节奏（rise-in + stagger）。
+   ============================================================ */
+
+/* ---------- 工具页骨架 ---------- */
+
+.uc-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.uc-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.uc-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+}
+
+.uc-section {
+  margin-bottom: var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.uc-section:hover {
+  box-shadow: var(--shadow-2);
+}
+
+/* ---------- 类别切换标签 ---------- */
+
+.uc-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.uc-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 40px;
+  padding: var(--sp-1) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.uc-tab:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-sunken);
+}
+
+.uc-tab-label {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.uc-tab-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+/* 激活态：实色底白字（与 .btn-primary 同惯例） */
+.uc-tab.is-active {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #ffffff;
+}
+
+.uc-tab.is-active .uc-tab-hint {
+  color: #ffffff;
+  opacity: 0.78;
+}
+
+/* ---------- 输入面板 ---------- */
+
+.uc-input-head {
+  margin-bottom: var(--sp-4);
+}
+
+.uc-input-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.uc-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(170px, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.uc-input-row + .uc-input-row {
+  margin-top: var(--sp-3);
+}
+
+.uc-field {
+  min-width: 0;
+}
+
+.uc-field-label {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+.uc-field-hint {
+  margin-left: var(--sp-2);
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+
+.uc-field-error {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  line-height: 1.6;
+}
+
+.uc-waiting-hint {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.uc-select {
+  cursor: pointer;
+  padding-right: var(--sp-2);
+}
+
+.uc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+/* ---------- 等待态与错误卡 ---------- */
+
+.uc-waiting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.uc-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.uc-error-card {
+  border-color: var(--danger-border);
+  background: linear-gradient(0deg, var(--danger-soft), var(--danger-soft)), var(--surface);
+}
+
+.uc-error-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.uc-error-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.uc-error-summary {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+/* ---------- 结果网格（视觉核心） ---------- */
+
+.uc-result-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.uc-result-caption {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.uc-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.uc-result-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.uc-result-cell.is-source {
+  background: var(--accent-soft);
+  border-color: var(--accent-a28);
+}
+
+.uc-result-unit {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.uc-result-value {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.uc-result-cell.is-source .uc-result-value {
+  color: var(--accent-strong);
+}
+
+.uc-result-tag {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+/* ---------- 下载时间结果卡 ---------- */
+
+.uc-duration {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.uc-duration-value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.uc-duration-summary {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+/* ---------- 换算关系链 ---------- */
+
+.uc-chain-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.uc-chain-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
+
+.uc-chain-arrow {
+  color: var(--accent-strong);
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.uc-chain-title {
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+  min-width: 11em;
+}
+
+.uc-chain-detail {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 💡 教学卡 ---------- */
+
+.uc-teaching {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--accent-strong);
+}
+
+.uc-teaching-badge {
+  flex: 0 0 auto;
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 900px) {
+  .uc-result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .uc-chain-item {
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+
+  .uc-chain-title {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .uc-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .uc-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uc-actions {
+    justify-content: stretch;
+  }
+
+  .uc-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
