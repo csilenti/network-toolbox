@@ -7,6 +7,8 @@ import DnsLabTool from './dns-lab/DnsLabTool';
 import { DnsLabIcon } from './dns-lab/icon';
 import MaskCalcTool from './mask-calc/MaskCalcTool';
 import { MaskCalcIcon } from './mask-calc/icon';
+import UnitCalcTool from './unit-calc/UnitCalcTool';
+import { UnitCalcIcon } from './unit-calc/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -57,5 +59,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '掩码与CIDR双向换算及网段信息速查',
     icon: MaskCalcIcon,
     component: MaskCalcTool,
+  },
+  {
+    id: 'unit-calc',
+    name: '网络单位换算',
+    description: '带宽、数据大小与下载时间换算',
+    icon: UnitCalcIcon,
+    component: UnitCalcTool,
   },
 ];
