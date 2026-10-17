@@ -1,0 +1,615 @@
+/* ============================================================
+   路由表分析器 —— 工具专属样式
+   视觉体系与 mask-calc / ip-subnet 保持一致：
+   所有颜色一律引用 tokens.css 变量，组件内禁止硬编码色值
+   （#ffffff 白字为项目既有惯例，用于深色徽标底）。
+   专属视觉元素：路由表条目卡片 + 匹配判定徽标。
+   ============================================================ */
+
+/* ---------- 工具页骨架 ---------- */
+
+.ra-section {
+  margin-bottom: var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.ra-section:hover {
+  box-shadow: var(--shadow-2);
+}
+
+.ra-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.ra-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.ra-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+}
+
+/* ---------- 查询输入面板 ---------- */
+
+.ra-input-head {
+  margin-bottom: var(--sp-4);
+}
+
+.ra-input-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.ra-query-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) auto;
+  gap: var(--sp-4);
+  align-items: end;
+}
+
+.ra-field-label {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+.ra-field-hint {
+  margin-left: var(--sp-2);
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+
+.ra-field-error {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  line-height: 1.6;
+}
+
+.ra-form-hint {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--accent-strong);
+  line-height: 1.6;
+}
+
+.ra-quick-actions {
+  display: flex;
+  gap: var(--sp-2);
+  padding-bottom: 1px;
+}
+
+/* ---------- 路由表条目卡片 ---------- */
+
+.ra-table-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.ra-table-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.ra-route-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.ra-empty {
+  padding: var(--sp-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  background: var(--surface-sunken);
+}
+
+.ra-route-card {
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+  animation: rise-in 420ms var(--ease-out) both;
+}
+
+.ra-route-card:hover {
+  border-color: var(--border-strong);
+}
+
+/* 决赛圈 / 选中态高亮 */
+.ra-route-card.is-winner {
+  border-color: var(--accent-a55);
+  background: linear-gradient(0deg, var(--accent-soft), var(--accent-soft)), var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.ra-route-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.ra-route-id {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 7px;
+  flex: 0 0 auto;
+}
+
+.ra-route-net {
+  font-weight: 600;
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+/* ---- 匹配判定徽标（本工具专属视觉元素） ---- */
+
+.ra-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.ra-badge-idle {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-color: var(--border);
+}
+
+.ra-badge-match {
+  color: var(--net);
+  background: var(--net-soft);
+  border-color: var(--net);
+}
+
+.ra-badge-miss {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-color: var(--border-strong);
+  opacity: 0.85;
+}
+
+.ra-badge-winner {
+  color: #ffffff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.ra-finalist-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--subnet-strong);
+  background: var(--subnet-soft);
+  border: 1px solid var(--subnet);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.ra-delete-btn {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.ra-delete-btn:hover {
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+}
+
+.ra-route-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-4);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.ra-route-meta b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ra-reason {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  border-left: 2px solid var(--border-strong);
+  padding-left: var(--sp-2);
+}
+
+.ra-reason.is-match {
+  color: var(--net);
+  border-left-color: var(--net);
+}
+
+.ra-reason.is-miss {
+  color: var(--text-secondary);
+}
+
+/* ---------- 新增条目表单 ---------- */
+
+.ra-add-form {
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-4);
+}
+
+.ra-add-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-bottom: var(--sp-3);
+}
+
+.ra-add-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(110px, 1fr)) minmax(110px, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.ra-add-actions {
+  display: flex;
+  align-items: end;
+  padding-bottom: 1px;
+}
+
+.ra-add-actions .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- 胜出路由转发详情 ---------- */
+
+.ra-winner-head {
+  margin-bottom: var(--sp-4);
+}
+
+.ra-winner-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.ra-winner-card {
+  padding: var(--sp-4);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+
+.ra-winner-route {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--accent-strong);
+  margin-bottom: var(--sp-3);
+}
+
+.ra-winner-trophy {
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+
+.ra-result-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.ra-result-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.ra-result-row dt {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.ra-result-row dd {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+  font-size: var(--fs-md);
+  color: var(--text);
+}
+
+.ra-winner-reason {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--accent-strong);
+}
+
+/* ---- 不可达教学提示卡 ---- */
+
+.ra-unreachable {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  border-color: var(--danger-border);
+  background: linear-gradient(0deg, var(--danger-soft), var(--danger-soft)), var(--surface);
+}
+
+.ra-unreachable-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.ra-unreachable-body h3 {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--danger);
+  margin-bottom: var(--sp-1);
+}
+
+.ra-unreachable-body p {
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.ra-unreachable-tip {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary) !important;
+}
+
+/* ---------- 匹配过程详解 ---------- */
+
+.ra-steps-head {
+  margin-bottom: var(--sp-4);
+}
+
+.ra-steps-head .panel-caption {
+  margin-top: var(--sp-1);
+}
+
+.ra-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ra-step-item {
+  position: relative;
+  display: flex;
+  gap: var(--sp-3);
+  padding: 0 0 var(--sp-4) 0;
+  margin-left: 5px;
+  border-left: 2px solid var(--accent-a22);
+  animation: rise-in 420ms var(--ease-out) both;
+}
+
+.ra-step-item:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.ra-step-dot {
+  position: absolute;
+  left: -6px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2.5px solid var(--accent-strong);
+}
+
+.ra-step-body {
+  padding-left: var(--sp-3);
+  font-size: var(--fs-md);
+  line-height: 1.75;
+}
+
+.ra-step-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.ra-step-num {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+.ra-step-title {
+  font-weight: 600;
+}
+
+.ra-step-detail {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.ra-step-binary {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-2);
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 等待态与错误卡 ---------- */
+
+.ra-waiting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.ra-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.ra-error-card {
+  border-color: var(--danger-border);
+  background: linear-gradient(0deg, var(--danger-soft), var(--danger-soft)), var(--surface);
+}
+
+.ra-error-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.ra-error-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.ra-error-summary {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+/* ---------- 底部概念说明 ---------- */
+
+.ra-footnote {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  padding: 0 var(--sp-2) var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.ra-concepts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.ra-concepts li {
+  line-height: 1.7;
+}
+
+.ra-concepts strong {
+  color: var(--text);
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 900px) {
+  .ra-query-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ra-quick-actions {
+    justify-content: flex-end;
+  }
+
+  .ra-add-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ra-add-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .ra-result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ra-add-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ra-route-meta {
+    gap: var(--sp-1) var(--sp-3);
+  }
+
+  .ra-delete-btn {
+    margin-left: 0;
+  }
+}
