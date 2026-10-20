@@ -1,0 +1,451 @@
+/* ============================================================
+   OSI / TCP-IP 模型对照 —— 工具专属样式
+   视觉体系与 mask-calc / ip-subnet 保持一致：
+   分层配色复用语义三色系（上层 accent teal / 中层 net 深青 / 下层 host 灰紫），
+   所有颜色一律引用 tokens.css 变量，组件内禁止硬编码色值。
+   ============================================================ */
+
+/* ---------- 工具页骨架 ---------- */
+
+.om-header {
+  margin-bottom: var(--sp-5);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.om-header h1 {
+  font-size: var(--fs-2xl);
+  letter-spacing: 0.3px;
+}
+
+.om-subtitle {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+.tool-section {
+  margin-bottom: var(--sp-4);
+  animation: rise-in var(--dur-slow) var(--ease-out) both;
+}
+
+.tool-section:hover {
+  box-shadow: var(--shadow-2);
+}
+
+/* ---------- 双栈对照板 ---------- */
+
+.om-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: stretch;
+}
+
+.om-board-hint {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 栏标题 */
+.om-stack-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-bottom: var(--sp-2);
+  text-align: center;
+}
+
+/* 层堆叠：每层等高，保证连线 y 中心与卡片中心对齐 */
+.om-stack {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: var(--sp-2);
+  height: calc(100% - 34px); /* 减去栏标题占位，连线区域与堆叠等高 */
+}
+
+.om-stack-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- 层卡片 ---------- */
+
+.om-layer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 52px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.om-layer:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+
+.om-layer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 层号徽标 */
+.om-layer-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: inherit;
+}
+
+.om-layer-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.om-layer-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.om-layer-en {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* ---------- 分组着色（复用语义三色系 tokens） ---------- */
+
+/* 上层：应用族 —— accent teal */
+.om-layer--upper .om-layer-num {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.om-layer--upper.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-a40);
+}
+
+/* 中层：传输 + 网络 —— net 深青 */
+.om-layer--mid .om-layer-num {
+  background: var(--net-soft);
+  color: var(--net);
+}
+
+.om-layer--mid.is-active {
+  background: var(--net-soft);
+  border-color: var(--net);
+}
+
+/* 下层：链路 + 物理 —— host 灰紫 */
+.om-layer--low .om-layer-num {
+  background: var(--host-soft);
+  color: var(--host);
+}
+
+.om-layer--low.is-active {
+  background: var(--host-soft);
+  border-color: var(--host);
+}
+
+/* 激活态（悬停优先 / 点击持久选中共用） */
+.om-layer.is-active {
+  box-shadow: var(--shadow-2);
+}
+
+.om-layer.is-active .om-layer-name {
+  color: var(--accent-strong);
+}
+
+.om-layer--mid.is-active .om-layer-name {
+  color: var(--net);
+}
+
+.om-layer--low.is-active .om-layer-name {
+  color: var(--host);
+}
+
+/* 联动态：对侧对应层的底色联动（≤720px 时是唯一联动方式） */
+.om-layer.is-linked {
+  border-style: dashed;
+  border-color: var(--accent-a40);
+  background: var(--accent-soft);
+}
+
+/* ---------- 映射连接线 ---------- */
+
+.om-lines {
+  display: block;
+  width: 100%;
+  height: calc(100% - 34px); /* 与 .om-stack 等高，保证 y 坐标对齐 */
+  overflow: visible;
+}
+
+.om-line {
+  stroke: var(--text-a18);
+  stroke-width: 1.5;
+  transition: stroke 220ms var(--ease-out), stroke-width 220ms var(--ease-out);
+}
+
+.om-line.is-on {
+  stroke: var(--accent-strong);
+  stroke-width: 2.5;
+}
+
+/* ---------- 层详情面板 ---------- */
+
+.om-detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.om-detail-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  font-size: var(--fs-md);
+}
+
+.om-detail-stack {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 1px 8px;
+}
+
+.om-detail-num {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.om-detail-en {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+/* 四要素 2×2 网格 */
+.om-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.om-detail-block {
+  padding: var(--sp-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  min-width: 0;
+}
+
+.om-detail-label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+.om-detail-body {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+.om-pdu {
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.om-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.om-chip {
+  display: inline-block;
+  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.om-chip--empty {
+  font-family: inherit;
+  color: var(--text-secondary);
+  border-style: dashed;
+}
+
+/* 教学备注（如 ARP 争议） */
+.om-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--accent-strong);
+}
+
+.om-note-badge {
+  flex: 0 0 auto;
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+}
+
+/* 引导态（未选中任何层） */
+.om-detail--guide {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.om-detail--guide.om-detail {
+  background: transparent;
+}
+
+.om-guide-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+
+.om-guide-text {
+  margin-top: var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+
+/* ---------- 教学卡 ---------- */
+
+.om-teaching {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-a28);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  line-height: 1.8;
+  color: var(--accent-strong);
+}
+
+.om-teaching-badge {
+  flex: 0 0 auto;
+  font-size: var(--fs-lg);
+  line-height: 1.4;
+}
+
+.om-teaching-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-bottom: var(--sp-1);
+}
+
+.om-teaching-body p + p {
+  margin-top: var(--sp-1);
+}
+
+.om-teaching strong {
+  color: var(--text);
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 900px) {
+  .om-board {
+    grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  }
+
+  .om-layer {
+    padding: var(--sp-2);
+    min-height: 46px;
+  }
+
+  .om-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  /* 上下堆叠，连线隐藏，改为对应层底色联动 */
+  .om-board {
+    grid-template-columns: 1fr;
+  }
+
+  .om-lines {
+    display: none;
+  }
+
+  .om-stack-col--tcpip {
+    margin-top: var(--sp-2);
+  }
+
+  .om-layer.is-linked::after {
+    content: '↕ 对应层';
+    margin-left: auto;
+    font-size: var(--fs-xs);
+    color: var(--accent-strong);
+    white-space: nowrap;
+  }
+
+  .om-layer {
+    min-height: 44px;
+  }
+
+  .om-layer-num {
+    width: 24px;
+    height: 24px;
+    font-size: var(--fs-xs);
+  }
+}
