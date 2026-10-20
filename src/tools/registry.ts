@@ -13,6 +13,8 @@ import UnitCalcTool from './unit-calc/UnitCalcTool';
 import { UnitCalcIcon } from './unit-calc/icon';
 import RouteAnalysisTool from './route-analysis/RouteAnalysisTool';
 import { RouteAnalysisIcon } from './route-analysis/icon';
+import OsiModelTool from './osi-model/OsiModelTool';
+import { OsiModelIcon } from './osi-model/icon';
 
 /**
  * 工具注册表 —— 新增工具的唯一入口。
@@ -84,5 +86,12 @@ export const toolRegistry: ToolDefinition[] = [
     description: '最长前缀匹配过程可视化分析',
     icon: RouteAnalysisIcon,
     component: RouteAnalysisTool,
+  },
+  {
+    id: 'osi-model',
+    name: 'OSI/TCP-IP 模型',
+    description: '分层结构与映射关系可视化',
+    icon: OsiModelIcon,
+    component: OsiModelTool,
   },
 ];
